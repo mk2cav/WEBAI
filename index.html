@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WebGPU MoE Demo</title>
+  <meta name="description" content="Run the com.microsoft.MoE WebGPU kernel from the Hugging Face Hub in your browser and check it against a CPU reference." />
+  <link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Mixture of Experts on WebGPU</h1>
+    <p class="lede">
+      Runs the <a href="https://huggingface.co/kernels/webgpu-kernels/com.microsoft.MoE" target="_blank" rel="noopener"><code>com.microsoft.MoE</code></a>
+      kernel from the Hugging Face Hub in your browser with
+      <a href="https://www.npmjs.com/package/@huggingface/kernels" target="_blank" rel="noopener"><code>@huggingface/kernels</code></a>,
+      then checks the result against a CPU reference.
+    </p>
+    <div id="status" data-kind="idle">Checking WebGPU…</div>
+  </header>
+
+  <main>
+    <section class="card" id="explain">
+      <h2>How it works</h2>
+      <ol class="flow">
+        <li><strong>Router.</strong> Each token has one logit per expert. The kernel applies softmax and keeps the top-<var>k</var> experts.</li>
+        <li><strong>Experts.</strong> Each chosen expert is a small feed-forward network: <code>act(x·W1 + b1) · W2 + b2</code>, with an optional gate <code>⊙ (x·W3 + b3)</code>.</li>
+        <li><strong>Mix.</strong> The expert outputs are summed, weighted by their routing probabilities, which are renormalised to sum to 1 if you enable that.</li>
+      </ol>
+    </section>
+
+    <section class="card" id="config">
+      <h2>Configuration</h2>
+      <div class="grid">
+        <label>Tokens <input id="rows" type="number" min="1" max="4096" value="16" /></label>
+        <label>Hidden size <input id="hidden" type="number" min="1" max="4096" value="64" /></label>
+        <label>Expert inner size <input id="inter" type="number" min="1" max="16384" value="128" /></label>
+        <label>Experts <input id="experts" type="number" min="1" max="256" value="8" /></label>
+        <label>Top-k <input id="k" type="number" min="1" max="256" value="2" /></label>
+        <label>Activation
+          <select id="activation">
+            <option value="silu">silu</option>
+            <option value="gelu">gelu</option>
+            <option value="relu" selected>relu</option>
+            <option value="identity">identity</option>
+          </select>
+        </label>
+        <label>Seed
+          <span class="inline"><input id="seed" type="number" value="42" /><button id="reseed" type="button" class="ghost" title="Random seed">⟳</button></span>
+        </label>
+      </div>
+      <div class="checks">
+        <label><input id="normalize" type="checkbox" /> Renormalise top-k weights</label>
+        <label><input id="gated" type="checkbox" /> Gated FFN (fc3, SwiGLU-style)</label>
+        <label><input id="bias" type="checkbox" checked /> Biases</label>
+      </div>
+      <div class="actions">
+        <button id="load" type="button">1. Load kernel</button>
+        <button id="run" type="button" disabled>2. Run &amp; verify</button>
+        <button id="bench" type="button" class="secondary" disabled>Benchmark</button>
+      </div>
+      <p id="bench-out" class="muted"></p>
+    </section>
+
+    <section class="card" id="routing">
+      <h2>Routing</h2>
+      <p class="muted">Cell shade shows the softmax probability. Outlined cells are the top-k experts each token is sent to.</p>
+      <div class="routing-wrap">
+        <div>
+          <div id="heatmap" class="heatmap"></div>
+          <p id="heatmap-note" class="muted"></p>
+        </div>
+        <div>
+          <h3>Tokens per expert</h3>
+          <div id="load-bars"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="results" hidden>
+      <h2>Result <span id="verdict" class="pill"></span></h2>
+      <dl class="metrics">
+        <div><dt>Output shape</dt><dd id="m-shape"></dd></div>
+        <div><dt>dtype</dt><dd id="m-dtype"></dd></div>
+        <div><dt>GPU call</dt><dd id="m-gpu"></dd></div>
+        <div><dt>CPU reference</dt><dd id="m-cpu"></dd></div>
+        <div><dt>Max |Δ|</dt><dd id="m-err"></dd></div>
+        <div><dt>Max rel. Δ</dt><dd id="m-rel"></dd></div>
+        <div><dt>Weight layout</dt><dd id="m-layout"></dd></div>
+      </dl>
+      <div class="scroll"><table id="sample" class="num"></table></div>
+    </section>
+
+    <section class="card">
+      <h2>Kernel manifest</h2>
+      <div id="manifest"><p class="muted">Load the kernel to see its declared inputs, outputs and attributes.</p></div>
+    </section>
+
+    <section class="card">
+      <h2>Log</h2>
+      <div id="log"></div>
+    </section>
+  </main>
+
+  <footer class="muted">
+    Kernel loader: <code>@huggingface/kernels@0.0.1-preview.3</code>, vendored in <code>vendor/</code> under Apache-2.0.
+    Needs a browser with WebGPU.
+  </footer>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

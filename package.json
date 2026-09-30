@@ -1,0 +1,10 @@
+{
+  "name": "webai-moe-demo",
+  "private": true,
+  "type": "module",
+  "description": "Browser demo for the com.microsoft.MoE WebGPU kernel from the Hugging Face Hub.",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "node --test test/*.test.js"
+  }
+}
