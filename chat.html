@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WebGPU MoE Chat</title>
+  <meta name="description" content="Load a Mixture-of-Experts language model in your browser with WebGPU and ask it questions." />
+  <link rel="stylesheet" href="src/style.css" />
+</head>
+<body class="chat-page">
+  <header>
+    <nav class="nav">
+      <a href="index.html">Kernel demo</a>
+      <a href="chat.html" aria-current="page">Chat</a>
+    </nav>
+    <h1>Chat with a Mixture-of-Experts model</h1>
+    <p class="lede">
+      Downloads an ONNX language model from the Hugging Face Hub and runs it entirely in your browser on
+      WebGPU, using <a href="https://www.npmjs.com/package/@huggingface/transformers" target="_blank" rel="noopener"><code>transformers.js</code></a>.
+      Nothing you type leaves your machine. The weights are cached by the browser, so later loads are much faster.
+    </p>
+    <div id="status" data-kind="idle">Checking WebGPU…</div>
+  </header>
+
+  <main>
+    <section class="card" id="model-card">
+      <h2>Model</h2>
+      <div class="grid model-grid">
+        <label class="span-2">Model
+          <select id="preset"></select>
+        </label>
+        <label class="span-2" id="custom-wrap" hidden>Hugging Face model ID
+          <input id="custom" type="text" placeholder="onnx-community/…-ONNX" spellcheck="false" />
+        </label>
+        <label>Precision
+          <select id="dtype">
+            <option value="q4f16">q4f16 (smallest)</option>
+            <option value="q4">q4</option>
+            <option value="fp16">fp16</option>
+          </select>
+        </label>
+      </div>
+      <p id="preset-note" class="muted"></p>
+      <div class="actions">
+        <button id="load" type="button">Load model</button>
+      </div>
+      <div id="progress"></div>
+    </section>
+
+    <section class="card chat-card">
+      <div id="messages" aria-live="polite">
+        <p class="empty muted" id="empty">Load a model, then ask it anything.</p>
+      </div>
+      <div id="suggestions" class="suggestions">
+        <button type="button" class="chip">Explain mixture-of-experts models in two sentences.</button>
+        <button type="button" class="chip">Write a haiku about GPUs.</button>
+        <button type="button" class="chip">What is 17 × 23? Show your working.</button>
+      </div>
+      <form id="composer">
+        <textarea id="prompt" rows="2" placeholder="Ask a question… (Enter to send, Shift+Enter for a new line)" disabled></textarea>
+        <div class="composer-actions">
+          <button id="send" type="submit" disabled>Send</button>
+          <button id="stop" type="button" class="secondary" hidden>Stop</button>
+        </div>
+      </form>
+      <div class="chat-foot">
+        <span id="stats" class="muted"></span>
+        <button id="clear" type="button" class="ghost">Clear chat</button>
+      </div>
+    </section>
+
+    <details class="card">
+      <summary><h2>Generation settings</h2></summary>
+      <div class="grid">
+        <label>Max new tokens <input id="max-tokens" type="number" min="16" max="8192" value="1024" /></label>
+        <label>Temperature <input id="temperature" type="number" min="0" max="2" step="0.1" value="0.7" /></label>
+      </div>
+      <label class="block">System prompt
+        <textarea id="system" rows="2" placeholder="Optional, e.g. “You are a concise assistant.”"></textarea>
+      </label>
+      <p class="muted">A temperature of 0 always picks the most likely token (greedy decoding).</p>
+    </details>
+  </main>
+
+  <footer class="muted">
+    Runs on <code>@huggingface/transformers@4.3.0</code>, loaded from jsDelivr. Needs a browser with WebGPU and
+    enough GPU memory for the model you pick.
+  </footer>
+
+  <script type="module" src="src/chat.js"></script>
+</body>
+</html>

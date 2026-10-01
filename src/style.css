@@ -31,6 +31,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 body {
   margin: 0;
@@ -150,3 +151,84 @@ ul.attrs { margin: 0; padding-left: 20px; }
 .log-ok { color: var(--ok); }
 .log-warn { color: var(--warn); }
 .log-error { color: var(--error); }
+
+/* ---------------------------------------------------------------- navigation */
+
+.nav { display: flex; gap: 4px; margin-bottom: 16px; }
+.nav a {
+  text-decoration: none;
+  color: var(--muted);
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+}
+.nav a[aria-current="page"] { color: var(--text); border-color: var(--border); background: var(--surface); }
+.nav a:hover { color: var(--text); }
+
+/* ---------------------------------------------------------------- chat page */
+
+input[type="text"], textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  width: 100%;
+}
+textarea { resize: vertical; }
+label.block { margin-top: 12px; }
+.span-2 { grid-column: span 2; }
+@media (max-width: 480px) { .span-2 { grid-column: auto; } }
+.model-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+#preset-note { margin: 10px 0 14px; }
+
+#progress { margin-top: 14px; }
+.file-progress { display: grid; grid-template-columns: minmax(0, 1fr) 2fr auto; gap: 10px; align-items: center; font-size: 0.8rem; margin: 4px 0; }
+.file-name { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-size { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.error-note { color: var(--error); font-size: 0.9rem; margin: 10px 0 0; }
+
+.chat-card { display: flex; flex-direction: column; gap: 12px; }
+#messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 220px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 4px;
+}
+.empty { margin: auto; }
+.msg { max-width: 85%; padding: 10px 14px; border-radius: 14px; overflow-wrap: anywhere; }
+.msg-user, .msg-text, .reasoning-text { white-space: pre-wrap; }
+.msg-user { align-self: flex-end; background: var(--accent); color: var(--accent-text); border-bottom-right-radius: 4px; }
+.msg-assistant { align-self: flex-start; background: var(--code-bg); border-bottom-left-radius: 4px; }
+.msg-assistant.pending .msg-text:empty::after { content: "…"; color: var(--muted); animation: pulse 1s infinite; }
+.reasoning { margin-bottom: 8px; font-size: 0.85rem; color: var(--muted); }
+.reasoning summary { cursor: pointer; }
+.reasoning-text { margin-top: 6px; padding-left: 10px; border-left: 2px solid var(--border); max-height: 240px; overflow-y: auto; }
+
+.suggestions { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font-weight: 400;
+  font-size: 0.85rem;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+
+#composer { display: flex; gap: 8px; align-items: flex-end; }
+#composer textarea { flex: 1; }
+.composer-actions { display: flex; }
+.chat-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+details.card > summary { list-style: none; cursor: pointer; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card > summary h2 { display: inline-flex; margin: 0; }
+details.card > summary h2::before { content: "▸"; color: var(--muted); }
+details.card[open] > summary h2::before { content: "▾"; }
+details.card[open] > summary { margin-bottom: 12px; }

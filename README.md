@@ -1,5 +1,13 @@
 # WebGPU MoE demo
 
+Two pages, both running on WebGPU in the browser:
+
+- **`index.html` (kernel demo)** runs the single `com.microsoft.MoE` kernel and checks its output.
+- **`chat.html` (chat)** loads a complete Mixture-of-Experts language model and lets you ask it
+  questions.
+
+## Kernel demo
+
 A browser demo for the [`com.microsoft.MoE`](https://huggingface.co/kernels/webgpu-kernels/com.microsoft.MoE)
 WebGPU kernel from the Hugging Face Hub. The page loads the kernel with
 [`@huggingface/kernels`](https://www.npmjs.com/package/@huggingface/kernels), runs a random
@@ -38,13 +46,42 @@ Safari. Then click **Load kernel** and **Run & verify**. The page must be able t
 - `vendor/huggingface-kernels/` contains `@huggingface/kernels@0.0.1-preview.3`, copied
   unmodified from npm under the Apache-2.0 license, so the demo does not depend on a CDN.
 
+## Chat page
+
+`chat.html` uses [transformers.js](https://www.npmjs.com/package/@huggingface/transformers) v4
+(loaded from jsDelivr) to download an ONNX model from the Hub and run it on WebGPU in a Web
+Worker. Replies stream in token by token.
+
+| Preset | Type | Download |
+| --- | --- | --- |
+| `onnx-community/LFM2-8B-A1B-ONNX` | MoE, 8.3B total / about 1.5B active | several GB |
+| `onnx-community/gpt-oss-20b-ONNX` | MoE, 21B total / about 3.6B active, reasoning | about 12 GB |
+| `onnx-community/Qwen3-0.6B-ONNX` | dense, small (quick check that the setup works) | about 0.5 GB |
+
+You can also enter any other transformers.js text-generation model ID. The page also:
+
+- has a precision selector (`q4f16`, `q4` or `fp16`), with a progress bar for each downloaded file;
+- keeps multi-turn history, and has an optional system prompt and settings for max new tokens
+  and temperature;
+- has a **Stop** button that interrupts generation;
+- shows reasoning (`<think>…</think>` or gpt-oss's analysis channel) in a collapsible "Reasoning"
+  section above the answer, and keeps it out of the chat history;
+- shows tokens per second and the time to the first token.
+
+The browser caches the weights, so only the first load downloads them. The models are large:
+start with Qwen3 0.6B to check that your browser and GPU work, then try a MoE model.
+
 ## Layout
 
 ```
-index.html               page
+index.html               kernel demo page
+chat.html                chat page
 src/main.js              kernel loading, input construction, UI
+src/chat.js              chat UI
+src/chat-worker.js       model loading and generation (Web Worker)
+src/chat-format.js       splits reasoning from the answer
 src/moe-reference.js     CPU reference implementation of com.microsoft.MoE
 src/style.css            styles (light and dark)
-test/                    node:test tests for the reference (npm test)
+test/                    node:test tests (npm test)
 vendor/                  vendored @huggingface/kernels
 ```
